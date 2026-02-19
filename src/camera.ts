@@ -157,9 +157,16 @@ class FrigateBridgeCamera extends RtspSmartCamera {
         if (derived)
             return derived;
 
-        // Last resort: derive from Frigate api url hostname.
+        // Last resort: derive from Frigate api url hostname, including RTSP credentials if available.
         try {
             const host = new URL(this.provider.storageSettings.values.serverUrl).hostname;
+            const rtspUsername = this.provider.config?.go2rtc?.rtsp?.username;
+            const rtspPassword = this.provider.config?.go2rtc?.rtsp?.password;
+            if (rtspUsername && rtspPassword) {
+                const encodedUser = encodeURIComponent(rtspUsername);
+                const encodedPass = encodeURIComponent(rtspPassword);
+                return `rtsp://${encodedUser}:${encodedPass}@${host}:8554`;
+            }
             return `rtsp://${host}:8554`;
         } catch {
             return undefined;

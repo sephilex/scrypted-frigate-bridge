@@ -297,13 +297,31 @@ export default class FrigateBridgePlugin extends RtspProvider implements DeviceP
                 return;
             }
 
-            // Auto-populate base go2rtc URL if not set.
+            // Auto-populate base go2rtc URL if not set, including RTSP credentials from Frigate config.
             try {
-                // if (!this.storageSettings.values.baseGo2rtcUrl) {
                 const host = new URL(this.storageSettings.values.serverUrl).hostname;
-                // this.storageSettings.values.baseGo2rtcUrl = `rtsp://${host}:8554`;
-                this.storageSettings.settings.baseGo2rtcUrl.defaultValue = `rtsp://${host}:8554`;
-                // }
+
+                // Fetch Frigate config to check for go2rtc RTSP auth credentials.
+                let rtspUsername: string | undefined;
+                let rtspPassword: string | undefined;
+                try {
+                    const config = await this.getConfiguration();
+                    rtspUsername = config?.go2rtc?.rtsp?.username;
+                    rtspPassword = config?.go2rtc?.rtsp?.password;
+                } catch {
+                    // Config fetch may fail on first init; fall back to no credentials.
+                }
+
+                let defaultGo2rtcUrl: string;
+                if (rtspUsername && rtspPassword) {
+                    const encodedUser = encodeURIComponent(rtspUsername);
+                    const encodedPass = encodeURIComponent(rtspPassword);
+                    defaultGo2rtcUrl = `rtsp://${encodedUser}:${encodedPass}@${host}:8554`;
+                } else {
+                    defaultGo2rtcUrl = `rtsp://${host}:8554`;
+                }
+
+                this.storageSettings.settings.baseGo2rtcUrl.defaultValue = defaultGo2rtcUrl;
             } catch {
             }
 

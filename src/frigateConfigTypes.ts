@@ -84,7 +84,7 @@ export interface FrigateCameraConfig {
     onvif?: Record<string, unknown>;
 
     enabled_in_config?: boolean;
-    ffmpeg_cmds?: Array<{ roles?: string[]; cmd?: string; [key: string]: unknown }>;
+    ffmpeg_cmds?: Array<{ roles?: string[]; cmd?: string;[key: string]: unknown }>;
 
     [key: string]: unknown;
 }
@@ -138,6 +138,11 @@ export interface FrigateConfig {
 
     go2rtc?: {
         streams?: Record<string, FrigateGo2RtcStreamDefinition>;
+        rtsp?: {
+            username?: string;
+            password?: string;
+            [key: string]: unknown;
+        };
         [key: string]: unknown;
     };
 
